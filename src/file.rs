@@ -1,0 +1,117 @@
+#[derive(serde::Deserialize)]
+pub struct TopolyxFile {
+    pub header: Header,
+    pub coordinate_system: CoordinateSystem,
+    pub objects: Vec<Object>,
+    pub meshes: Vec<Mesh>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct Header {
+    pub format: String,     // "Topolyx"
+    pub version: String,    // "1.0"
+}
+
+#[derive(serde::Deserialize)]
+pub struct CoordinateSystem {
+    pub up_axis: String,        // "+Z"
+    pub forward_axis: String,   // "+Y"
+    pub handedness: String,     // "RIGHT"
+    pub winding: String,        // "CCW"
+    pub meters_per_unit: f32,   // 0 초과, 유효한 수
+}
+
+#[derive(serde::Deserialize)]
+pub struct Object {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub object_type: String,    // "MESH"
+    pub index: usize,
+    pub transform: [f32; 16],   // Column-Major 4*4 변환 행렬
+}
+
+#[derive(serde::Deserialize)]
+pub struct Mesh {
+    pub name: String,
+    pub element_counts: ElementCounts,
+    pub topology: Topology,
+    #[serde(default)] // JSON에 없으면 빈 Vec
+    pub attributes: Vec<Attribute>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct ElementCounts {
+    pub vertices: u32,
+    pub edges: u32,
+    pub faces: u32,
+    pub corners: u32,
+}
+
+#[derive(serde::Deserialize)]
+pub struct Topology {
+    pub positions: DataDescriptor,
+    pub edges: DataDescriptor,
+    pub corner_vertices: DataDescriptor,
+    pub corner_edges: DataDescriptor,
+    pub face_offsets: DataDescriptor,
+}
+
+#[derive(serde::Deserialize)]
+pub struct DataDescriptor {
+    pub byte_offset: u32,
+    pub byte_length: u32,
+    pub component_type: ComponentType,
+    pub component_count: u32,
+    pub element_count: u32,
+}
+
+#[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq)]
+pub enum ComponentType {
+    F32,
+    I32,
+    U32,
+    I8,
+    U8,
+    #[serde(rename = "BOOL")]
+    Bool,
+}
+
+#[derive(serde::Deserialize)]
+pub struct Attribute {
+    pub name: String,
+    pub domain: Domain,
+    pub data: DataDescriptor,
+    #[serde(default)] // JSON에 없으면 Semantic::None
+    pub semantic: Semantic,
+}
+
+#[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq)]
+pub enum Domain {
+    #[serde(rename = "POINT")]
+    Point,
+    #[serde(rename = "EDGE")]
+    Edge,
+    #[serde(rename = "FACE")]
+    Face,
+    #[serde(rename = "CORNER")]
+    Corner,
+}
+
+#[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Semantic {
+    #[serde(rename = "POSITION")]
+    Position,
+    #[serde(rename = "DIRECTION")]
+    Direction,
+    #[serde(rename = "NORMAL")]
+    Normal,
+    #[serde(rename = "ROTATION")]
+    Rotation,
+    #[serde(rename = "TANGENT")]
+    Tangent,
+    #[serde(rename = "COLOR")]
+    Color,
+    #[default]
+    #[serde(rename = "NONE")]
+    None,
+}
