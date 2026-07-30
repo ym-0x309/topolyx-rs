@@ -1,0 +1,14 @@
+[package]
+name = "topolyx"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "A Rust crate for reading the Topolyx format"
+homepage = "https://github.com/ym-0x309/topolyx"
+repository = "https://github.com/ym-0x309/topolyx-rs"
+readme = "README.md"
+keywords = ["topolyx", "parser", "format"]
+categories = ["parser-implementations"]
+
+[dependencies]
+thiserror = "2.0.19"
