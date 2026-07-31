@@ -9,9 +9,6 @@ repository = "https://github.com/ym-0x309/topolyx-rs"
 readme = "README.md"
 keywords = ["topolyx", "parser", "format"]
 categories = ["parser-implementations"]
-exclude = [
-    "AGENTS.md"
-]
 
 [dependencies]
 serde = { version = "1.0.229", features = ["derive"] }
