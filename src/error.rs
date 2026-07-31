@@ -1,3 +1,4 @@
+/// Error occurred while loading a Topolyx file
 #[derive(thiserror::Error, Debug)]
 pub enum TopolyxError {
     #[error("io error: {0}")]
@@ -11,5 +12,5 @@ pub enum TopolyxError {
     #[error("total_length mismatch")]
     TotalLengthMismatch,
     #[error("json error:: {0}")]
-    Json(#[from] serde_json::Error)
+    Json(#[from] serde_json::Error),
 }

@@ -1,3 +1,4 @@
+/// Top-level structure of a Topolyx file
 #[derive(serde::Deserialize)]
 pub struct TopolyxFile {
     pub header: Header,
@@ -6,30 +7,34 @@ pub struct TopolyxFile {
     pub meshes: Vec<Mesh>,
 }
 
+/// Header of a Topolyx file
 #[derive(serde::Deserialize)]
 pub struct Header {
-    pub format: String,     // "Topolyx"
-    pub version: String,    // "1.0"
+    pub format: String,  // "Topolyx"
+    pub version: String, // "1.0"
 }
 
+/// Coordinate system information stored in the file. All fields except `meters_per_unit` are set to a single value.
 #[derive(serde::Deserialize)]
 pub struct CoordinateSystem {
-    pub up_axis: String,        // "+Z"
-    pub forward_axis: String,   // "+Y"
-    pub handedness: String,     // "RIGHT"
-    pub winding: String,        // "CCW"
-    pub meters_per_unit: f32,   // 0 초과, 유효한 수
+    pub up_axis: String,      // "+Z"
+    pub forward_axis: String, // "+Y"
+    pub handedness: String,   // "RIGHT"
+    pub winding: String,      // "CCW"
+    pub meters_per_unit: f32, // 0 초과, 유효한 수
 }
 
+/// Object information referencing a single mesh.
 #[derive(serde::Deserialize)]
 pub struct Object {
     pub name: String,
     #[serde(rename = "type")]
-    pub object_type: String,    // "MESH"
+    pub object_type: String, // "MESH"
     pub index: usize,
-    pub transform: [f32; 16],   // Column-Major 4*4 변환 행렬
+    pub transform: [f32; 16], // Column-Major 4*4 변환 행렬
 }
 
+/// Topology and attribute data for a single mesh
 #[derive(serde::Deserialize)]
 pub struct Mesh {
     pub name: String,
@@ -39,6 +44,7 @@ pub struct Mesh {
     pub attributes: Vec<Attribute>,
 }
 
+/// Number of vertices, edges, faces, and face corners in a mesh
 #[derive(serde::Deserialize)]
 pub struct ElementCounts {
     pub vertices: u32,
@@ -47,6 +53,7 @@ pub struct ElementCounts {
     pub corners: u32,
 }
 
+/// Basic Topology Data for the Mesh
 #[derive(serde::Deserialize)]
 pub struct Topology {
     pub positions: DataDescriptor,
@@ -56,6 +63,7 @@ pub struct Topology {
     pub face_offsets: DataDescriptor,
 }
 
+/// Attribute Data Information in BIN
 #[derive(serde::Deserialize)]
 pub struct DataDescriptor {
     pub byte_offset: u32,
@@ -65,6 +73,7 @@ pub struct DataDescriptor {
     pub element_count: u32,
 }
 
+/// List of currently supported attribute components
 #[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum ComponentType {
     F32,
@@ -76,6 +85,7 @@ pub enum ComponentType {
     Bool,
 }
 
+/// Attribute Information
 #[derive(serde::Deserialize)]
 pub struct Attribute {
     pub name: String,
@@ -85,6 +95,7 @@ pub struct Attribute {
     pub semantic: Semantic,
 }
 
+/// The domain where the attribute is stored
 #[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum Domain {
     #[serde(rename = "POINT")]
@@ -97,6 +108,7 @@ pub enum Domain {
     Corner,
 }
 
+/// The assigned role of an attribute
 #[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Semantic {
     #[serde(rename = "POSITION")]

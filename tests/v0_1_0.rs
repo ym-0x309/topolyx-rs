@@ -1,5 +1,4 @@
-// tests/read_topolyx.rs — 공개 API만 사용하는 통합 테스트
-use topolyx::{read_topolyx, read_topolyx_from_data}; // Cargo.toml의 name = "topolyx" 기준
+use topolyx::read_topolyx_from_data;
 
 const DEFAULT_CUBE_JSON: &str = r#"{
     "header": { "format": "Topolyx", "version": "1.0" },
