@@ -13,4 +13,12 @@ pub enum TopolyxError {
     TotalLengthMismatch,
     #[error("json error:: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("byte_offset is not 4-byte aligned: {0}")]
+    UnalignedByteOffset(u32),
+    #[error("byte_length does not match component_size * component_count * element_count")]
+    ByteLengthMismatch,
+    #[error("data descriptor references bytes outside the BIN chunk")]
+    DataOutOfBounds,
+    #[error("invalid BOOL byte value: {0}")]
+    InvalidBoolValue(u8),
 }

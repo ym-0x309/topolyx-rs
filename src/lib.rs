@@ -1,10 +1,13 @@
 //! A crate for reading .tlyx (Topolyx) files.
 //!
-//! Supported format version: Topolyx 1.0. Currently, only reading is supported;
-//! full validation is scheduled to be added in v0.3.0.
+//! Supported format version: Topolyx 1.0. [`read_topolyx`]/[`read_topolyx_from_data`] parse the
+//! container and JSON metadata; [`file::DataDescriptor::extract`] decodes the referenced BIN
+//! bytes into typed [`data::ComponentData`] arrays. Full cross-field validation (index ranges,
+//! name uniqueness, semantic/type matching, transform validity, ...) is scheduled for v0.3.0.
 
 use std::path::Path;
 
+pub mod data;
 pub mod error;
 pub mod file;
 pub mod reader;

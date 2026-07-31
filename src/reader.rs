@@ -45,7 +45,7 @@ fn read_chunk<'a>(
     if chunk_type != expected_type {
         return Err(TopolyxError::MalformedContainer);
     }
-    if chunk_length % 4 != 0 {
+    if !chunk_length.is_multiple_of(4) {
         return Err(TopolyxError::MalformedContainer);
     }
 

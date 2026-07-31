@@ -2,10 +2,6 @@
 
 ## 향후 계획
 
-### v0.2.0
-
-- 바이너리에서 데이터 추출
-
 ### v0.3.0
 
 - 파일 전체 유효성 검증
@@ -35,13 +31,20 @@
 
 ## 변경 기록
 
+### v0.2.0
+
+- 바이너리에서 데이터 추출
+  - `ComponentType::byte_size`, `DataDescriptor::extract`, `ComponentData` 추가
+  - 관련 에러 종류 추가 (`UnalignedByteOffset`, `ByteLengthMismatch`, `DataOutOfBounds`, `InvalidBoolValue`)
+  - 실행 테스트 추가
+
 ### v0.1.0
 
 > [!IMPORTANT]
 > 첫 버전
 
-- 에러 정의
-- 파일 헤더/JSON/BIN 추출 로직
+- 에러 정의(`Io`, `InvalidMagic`, `UnsupportedContainerVersion`, `MalformedContainer`, `TotalLengthMismatch`, `Json`)
+- 파일 헤더/JSON/BIN 추출 로직(`read_topolyx()`, `read_topolyx_from_data`) 정의
 - 실행 테스트 정의
 
 ---

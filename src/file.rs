@@ -64,7 +64,7 @@ pub struct Topology {
 }
 
 /// Attribute Data Information in BIN
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug, Clone, Copy)]
 pub struct DataDescriptor {
     pub byte_offset: u32,
     pub byte_length: u32,
@@ -74,7 +74,7 @@ pub struct DataDescriptor {
 }
 
 /// List of currently supported attribute components
-#[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(serde::Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ComponentType {
     F32,
     I32,
@@ -83,6 +83,16 @@ pub enum ComponentType {
     U8,
     #[serde(rename = "BOOL")]
     Bool,
+}
+
+impl ComponentType {
+    /// Size in bytes of a single component of this type (spec section 4, component type table).
+    pub const fn byte_size(self) -> usize {
+        match self {
+            ComponentType::F32 | ComponentType::I32 | ComponentType::U32 => 4,
+            ComponentType::I8 | ComponentType::U8 | ComponentType::Bool => 1,
+        }
+    }
 }
 
 /// Attribute Information
