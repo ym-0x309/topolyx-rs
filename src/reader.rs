@@ -1,7 +1,7 @@
 use crate::error::TopolyxError;
 
-/// Get the entire file and split it into a JSON part and a BIN part.
-pub fn parse_container(data: &[u8]) -> Result<(&[u8], &[u8]), TopolyxError> {
+/// Get the entire file and split it into the container version, a JSON part, and a BIN part.
+pub fn parse_container(data: &[u8]) -> Result<(u32, &[u8], &[u8]), TopolyxError> {
     // 헤더 확인
     let header = data.get(0..12).ok_or(TopolyxError::MalformedContainer)?;
 
@@ -26,7 +26,43 @@ pub fn parse_container(data: &[u8]) -> Result<(&[u8], &[u8]), TopolyxError> {
     // 청크 1 (BIN)
     let (bin_bytes, _) = read_chunk(data, offset, b"BIN\0")?;
 
-    Ok((json_bytes, bin_bytes))
+    Ok((version, json_bytes, bin_bytes))
+}
+
+/// Checks that every byte of `json_bytes` after the `consumed` bytes of actual JSON content
+/// is the spec-mandated `0x20` padding byte (spec section 5, "Container Validity").
+pub(crate) fn check_json_padding(json_bytes: &[u8], consumed: usize) -> Result<(), TopolyxError> {
+    for &byte in &json_bytes[consumed..] {
+        if byte != b' ' {
+            return Err(TopolyxError::InvalidPadding {
+                chunk: "JSON",
+                expected: b' ',
+                found: byte,
+            });
+        }
+    }
+    Ok(())
+}
+
+/// Checks that the container's major version matches the `x` of the JSON `header.version`
+/// (`"x.y"`) field (spec section 5, "Container Validity").
+pub(crate) fn check_header_version(
+    container_version: u32,
+    json_version: &str,
+) -> Result<(), TopolyxError> {
+    let json_major: u32 = json_version
+        .split_once('.')
+        .and_then(|(major, _)| major.parse().ok())
+        .ok_or_else(|| TopolyxError::InvalidHeaderVersion(json_version.to_string()))?;
+
+    if container_version != json_major {
+        return Err(TopolyxError::HeaderVersionMismatch {
+            container_version,
+            json_major,
+        });
+    }
+
+    Ok(())
 }
 
 /// Extract a chunk from the entire file based on the offset.

@@ -1,9 +1,12 @@
 //! A crate for reading .tlyx (Topolyx) files.
 //!
 //! Supported format version: Topolyx 1.0. [`read_topolyx`]/[`read_topolyx_from_data`] parse the
-//! container and JSON metadata; [`file::DataDescriptor::extract`] decodes the referenced BIN
-//! bytes into typed [`data::ComponentData`] arrays. Full cross-field validation (index ranges,
-//! name uniqueness, semantic/type matching, transform validity, ...) is scheduled for v0.3.0.
+//! container and JSON metadata, enforcing the container-level rules of spec section 5
+//! ("Container Validity"); [`file::DataDescriptor::extract`] decodes the referenced BIN bytes
+//! into typed [`data::ComponentData`] arrays. The remaining spec section 5 rules (index ranges,
+//! name uniqueness, semantic/type matching, transform validity, ...) are not checked
+//! automatically by these functions — call [`file::TopolyxFile::validate`] explicitly once the
+//! full spec-validity guarantee is needed.
 
 use std::path::Path;
 
@@ -11,10 +14,11 @@ pub mod data;
 pub mod error;
 pub mod file;
 pub mod reader;
+pub mod validate;
 
 use error::TopolyxError;
 use file::TopolyxFile;
-use reader::parse_container;
+use reader::{check_header_version, check_json_padding, parse_container};
 
 /// Reads a `.tlyx` file and returns the parsed structure and the original binary data.
 pub fn read_topolyx(path: impl AsRef<Path>) -> Result<(TopolyxFile, Vec<u8>), TopolyxError> {
@@ -25,9 +29,17 @@ pub fn read_topolyx(path: impl AsRef<Path>) -> Result<(TopolyxFile, Vec<u8>), To
 
 /// Returns a parsed structure and binary data based on the input data without reading the file.
 pub fn read_topolyx_from_data(data: Vec<u8>) -> Result<(TopolyxFile, Vec<u8>), TopolyxError> {
-    let (json_bytes, bin_bytes) = parse_container(&data)?;
+    let (container_version, json_bytes, bin_bytes) = parse_container(&data)?;
 
-    let file: TopolyxFile = serde_json::from_slice(json_bytes)?;
+    // `into_iter` (rather than plain `from_slice`) is used so `byte_offset()` reports exactly
+    // where the JSON value ends, letting the tail be checked as spec-mandated `0x20` padding
+    // instead of arbitrary JSON whitespace.
+    let mut json_stream = serde_json::Deserializer::from_slice(json_bytes).into_iter::<TopolyxFile>();
+    let file = json_stream
+        .next()
+        .unwrap_or_else(|| serde_json::from_slice(b""))?;
+    check_json_padding(json_bytes, json_stream.byte_offset())?;
+    check_header_version(container_version, &file.header.version)?;
 
     Ok((file, bin_bytes.to_vec()))
 }

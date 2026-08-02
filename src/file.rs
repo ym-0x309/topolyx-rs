@@ -1,5 +1,5 @@
 /// Top-level structure of a Topolyx file
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct TopolyxFile {
     pub header: Header,
     pub coordinate_system: CoordinateSystem,
@@ -8,14 +8,14 @@ pub struct TopolyxFile {
 }
 
 /// Header of a Topolyx file
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct Header {
     pub format: String,  // "Topolyx"
     pub version: String, // "1.0"
 }
 
 /// Coordinate system information stored in the file. All fields except `meters_per_unit` are set to a single value.
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct CoordinateSystem {
     pub up_axis: String,      // "+Z"
     pub forward_axis: String, // "+Y"
@@ -25,7 +25,7 @@ pub struct CoordinateSystem {
 }
 
 /// Object information referencing a single mesh.
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct Object {
     pub name: String,
     #[serde(rename = "type")]
@@ -35,7 +35,7 @@ pub struct Object {
 }
 
 /// Topology and attribute data for a single mesh
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct Mesh {
     pub name: String,
     pub element_counts: ElementCounts,
@@ -45,7 +45,7 @@ pub struct Mesh {
 }
 
 /// Number of vertices, edges, faces, and face corners in a mesh
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct ElementCounts {
     pub vertices: u32,
     pub edges: u32,
@@ -54,7 +54,7 @@ pub struct ElementCounts {
 }
 
 /// Basic Topology Data for the Mesh
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct Topology {
     pub positions: DataDescriptor,
     pub edges: DataDescriptor,
@@ -96,7 +96,7 @@ impl ComponentType {
 }
 
 /// Attribute Information
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct Attribute {
     pub name: String,
     pub domain: Domain,
@@ -106,7 +106,7 @@ pub struct Attribute {
 }
 
 /// The domain where the attribute is stored
-#[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(serde::Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Domain {
     #[serde(rename = "POINT")]
     Point,
@@ -119,7 +119,7 @@ pub enum Domain {
 }
 
 /// The assigned role of an attribute
-#[derive(serde::Deserialize, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(serde::Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Semantic {
     #[serde(rename = "POSITION")]
     Position,
