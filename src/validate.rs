@@ -195,21 +195,13 @@ fn validate_object_mesh_indices(objects: &[Object], mesh_count: usize) -> Result
 }
 
 fn validate_transform(object_index: usize, transform: &[f32; 16]) -> Result<(), TopolyxError> {
-    if linear_determinant(transform) == 0.0 {
+    let linear = crate::transform::linear_part(transform);
+    if crate::transform::determinant(&linear) == 0.0 {
         return Err(TopolyxError::SingularTransform {
             object: object_index,
         });
     }
     Ok(())
-}
-
-/// Determinant of the 3x3 linear part `L` of a column-major 4x4 `transform`
-/// (spec section 4, "Object Transform Application Rules"; `L[row][col] == transform[col*4+row]`).
-fn linear_determinant(transform: &[f32; 16]) -> f32 {
-    let (a, d, g) = (transform[0], transform[1], transform[2]); // column 0
-    let (b, e, h) = (transform[4], transform[5], transform[6]); // column 1
-    let (c, f, i) = (transform[8], transform[9], transform[10]); // column 2
-    a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g)
 }
 
 fn validate_topology_shape(mesh_index: usize, topology: &Topology) -> Result<(), TopolyxError> {

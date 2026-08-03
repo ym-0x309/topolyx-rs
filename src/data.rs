@@ -7,7 +7,8 @@ use crate::file::{ComponentType, DataDescriptor};
 ///
 /// Length is always `component_count * element_count` of the originating `DataDescriptor`.
 /// Values are not grouped per element (e.g. positions are not split into `[f32; 3]` chunks);
-/// semantic-aware grouping is left to the convenience API planned for v0.4.0.
+/// see [`ComponentData::grouped_f32`] and friends, or the higher-level
+/// [`crate::grouped`]/[`crate::transform`] convenience API, for semantic-aware grouping.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ComponentData {
     F32(Vec<f32>),

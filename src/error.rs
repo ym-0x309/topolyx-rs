@@ -139,4 +139,20 @@ pub enum TopolyxError {
         "mesh {mesh} has all-zero element_counts but topology.face_offsets does not decode to exactly [0]"
     )]
     EmptyMeshFaceOffsets { mesh: usize },
+
+    // --- convenience API (v0.4.0) ---
+    #[error(
+        "{field} has component_type {found_type:?} x{found_count}, expected {expected_type:?} x{expected_count}"
+    )]
+    UnexpectedComponentShape {
+        field: &'static str,
+        expected_type: ComponentType,
+        expected_count: u32,
+        found_type: ComponentType,
+        found_count: u32,
+    },
+    #[error("world-space transform application is not supported for semantic {0:?}")]
+    UnsupportedTransformSemantic(Semantic),
+    #[error("object transform's linear 3x3 part is singular (determinant == 0)")]
+    SingularObjectTransform,
 }

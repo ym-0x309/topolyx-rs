@@ -2,10 +2,6 @@
 
 ## 향후 계획
 
-### v0.4.0
-
-- 엔진에서 사용할 편의 api
-
 ### v0.5.0
 
 - 적대적 입력 테스트
@@ -26,6 +22,23 @@
 ---
 
 ## 변경 기록
+
+### v0.4.0
+
+- 엔진에서 사용할 편의 api
+  - semantic 기반 그루핑 (`src/grouped.rs`)
+    - `ComponentData::grouped_f32`/`grouped_i32`/`grouped_u32`/`grouped_i8`/`grouped_u8`/`grouped_bool` — 평탄한 배열을 `Vec<[T; N]>`로 그루핑
+    - `Topology::positions`/`edges`/`corner_vertices`/`corner_edges`/`face_offsets` — 명세 4장 shape 그대로 타입 있는 값 반환
+    - `AttributeValues`, `Attribute::values` — `semantic`에 따라 그루핑된 값을 반환 (`NONE`은 그루핑하지 않고 `ComponentData` 그대로 반환)
+    - `Mesh::attribute`/`attributes_by_semantic` — 이름/semantic으로 속성 조회
+  - face 순회 및 간이 삼각화 (`src/faces.rs`)
+    - `Mesh::faces`, `FaceCorners`, `Face` — `face_offsets` 기준 face별 코너 슬라이스 순회
+    - `Face::triangulate_fan` — fan triangulation (convex/planar face에 대해서만 정확함; non-planar/오목 n-gon 처리는 명세 범위 밖)
+  - 월드 스페이스 transform 적용 (`src/transform.rs`, 명세 4장 "Object Transform Application Rules")
+    - `Mesh::world_positions`, `Attribute::world_values` — `object.transform`을 semantic별 규칙(`POSITION`/`DIRECTION`/`NORMAL`/`TANGENT`/`COLOR`/`NONE`)에 따라 적용
+    - `ROTATION` semantic은 **미지원** — 일반적인 경우 `transform`의 선형부에서 순수 회전 성분을 뽑아내는 분해(polar decomposition 등)가 필요해 구현 범위를 넘어섬. 호출 시 `TopolyxError::UnsupportedTransformSemantic` 반환. 추후 버전에서 다룰 후보.
+  - 관련 에러 종류 추가 (`UnexpectedComponentShape`, `UnsupportedTransformSemantic`, `SingularObjectTransform`)
+  - 실행 테스트 추가 (`tests/v0_4_0.rs`)
 
 ### v0.3.0
 

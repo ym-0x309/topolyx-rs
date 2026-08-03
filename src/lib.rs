@@ -7,13 +7,27 @@
 //! name uniqueness, semantic/type matching, transform validity, ...) are not checked
 //! automatically by these functions — call [`file::TopolyxFile::validate`] explicitly once the
 //! full spec-validity guarantee is needed.
+//!
+//! On top of that raw decoding layer, a convenience API groups flat [`data::ComponentData`]
+//! into typed, per-element arrays and applies `object.transform` to convert values to world
+//! space:
+//!
+//! - [`grouped`]: semantic-aware grouping ([`file::Topology::positions`],
+//!   [`file::Attribute::values`], ...).
+//! - [`faces`]: per-face corner traversal ([`file::Mesh::faces`]) and naive fan triangulation.
+//! - [`transform`]: world-space conversion ([`file::Mesh::world_positions`],
+//!   [`file::Attribute::world_values`]) per spec section 4, "Object Transform Application
+//!   Rules". `ROTATION` is not supported yet — see the module docs.
 
 use std::path::Path;
 
 pub mod data;
 pub mod error;
+pub mod faces;
 pub mod file;
+pub mod grouped;
 pub mod reader;
+pub mod transform;
 pub mod validate;
 
 use error::TopolyxError;
