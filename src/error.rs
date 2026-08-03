@@ -155,4 +155,11 @@ pub enum TopolyxError {
     UnsupportedTransformSemantic(Semantic),
     #[error("object transform's linear 3x3 part is singular (determinant == 0)")]
     SingularObjectTransform,
+    #[error("corner {corner}'s {field} index {index} is out of range (length {length})")]
+    CornerIndexOutOfRange {
+        field: &'static str,
+        corner: usize,
+        index: usize,
+        length: usize,
+    },
 }
