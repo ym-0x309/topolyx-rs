@@ -5,8 +5,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::error::TopolyxError;
 use crate::file::{
-    Attribute, ComponentType, CoordinateSystem, DataDescriptor, Domain, ElementCounts, Mesh,
-    Object, Semantic, Topology, TopolyxFile,
+    Attribute, ComponentType, CoordinateSystem, DataDescriptor, Domain, ElementCounts, Header,
+    Mesh, Object, Semantic, Topology, TopolyxFile,
 };
 
 impl TopolyxFile {
@@ -18,6 +18,7 @@ impl TopolyxFile {
     /// guarantee is needed (e.g. before trusting the file's topology to be internally
     /// consistent).
     pub fn validate(&self, bin: &[u8]) -> Result<(), TopolyxError> {
+        validate_header(&self.header)?;
         validate_coordinate_system(&self.coordinate_system)?;
         validate_object_names(&self.objects)?;
         validate_mesh_names(&self.meshes)?;
@@ -103,11 +104,17 @@ fn validate_mesh_topology_values(
     validate_corner_edge_consistency(mesh_index, face_offsets, corner_vertices, corner_edges, edges)
 }
 
+/// Checks `header.format` (spec section 4, "Basic File Information") — a fixed literal value,
+/// same category as `coordinate_system`'s fixed fields below.
+fn validate_header(header: &Header) -> Result<(), TopolyxError> {
+    check_fixed_field("header", "format", "Topolyx", &header.format)
+}
+
 fn validate_coordinate_system(cs: &CoordinateSystem) -> Result<(), TopolyxError> {
-    check_fixed_field("up_axis", "+Z", &cs.up_axis)?;
-    check_fixed_field("forward_axis", "+Y", &cs.forward_axis)?;
-    check_fixed_field("handedness", "RIGHT", &cs.handedness)?;
-    check_fixed_field("winding", "CCW", &cs.winding)?;
+    check_fixed_field("coordinate_system", "up_axis", "+Z", &cs.up_axis)?;
+    check_fixed_field("coordinate_system", "forward_axis", "+Y", &cs.forward_axis)?;
+    check_fixed_field("coordinate_system", "handedness", "RIGHT", &cs.handedness)?;
+    check_fixed_field("coordinate_system", "winding", "CCW", &cs.winding)?;
 
     if !(cs.meters_per_unit.is_finite() && cs.meters_per_unit > 0.0) {
         return Err(TopolyxError::InvalidMetersPerUnit(cs.meters_per_unit));
@@ -117,12 +124,14 @@ fn validate_coordinate_system(cs: &CoordinateSystem) -> Result<(), TopolyxError>
 }
 
 fn check_fixed_field(
+    scope: &'static str,
     field: &'static str,
     expected: &'static str,
     found: &str,
 ) -> Result<(), TopolyxError> {
     if found != expected {
-        return Err(TopolyxError::InvalidCoordinateSystemField {
+        return Err(TopolyxError::InvalidFixedField {
+            scope,
             field,
             expected,
             found: found.to_string(),
@@ -135,12 +144,13 @@ fn validate_object_names(objects: &[Object]) -> Result<(), TopolyxError> {
     let mut seen = HashSet::new();
     for object in objects {
         if object.name.is_empty() {
-            return Err(TopolyxError::EmptyName("object.name"));
+            return Err(TopolyxError::EmptyName { kind: "object.name", mesh: None });
         }
         if !seen.insert(object.name.as_str()) {
             return Err(TopolyxError::DuplicateName {
                 kind: "object.name",
                 name: object.name.clone(),
+                mesh: None,
             });
         }
     }
@@ -151,12 +161,13 @@ fn validate_mesh_names(meshes: &[Mesh]) -> Result<(), TopolyxError> {
     let mut seen = HashSet::new();
     for mesh in meshes {
         if mesh.name.is_empty() {
-            return Err(TopolyxError::EmptyName("mesh.name"));
+            return Err(TopolyxError::EmptyName { kind: "mesh.name", mesh: None });
         }
         if !seen.insert(mesh.name.as_str()) {
             return Err(TopolyxError::DuplicateName {
                 kind: "mesh.name",
                 name: mesh.name.clone(),
+                mesh: None,
             });
         }
     }
@@ -167,12 +178,16 @@ fn validate_attribute_names(mesh_index: usize, attributes: &[Attribute]) -> Resu
     let mut seen = HashSet::new();
     for attribute in attributes {
         if attribute.name.is_empty() {
-            return Err(TopolyxError::EmptyAttributeName { mesh: mesh_index });
+            return Err(TopolyxError::EmptyName {
+                kind: "attribute.name",
+                mesh: Some(mesh_index),
+            });
         }
         if !seen.insert(attribute.name.as_str()) {
-            return Err(TopolyxError::DuplicateAttributeName {
-                mesh: mesh_index,
+            return Err(TopolyxError::DuplicateName {
+                kind: "attribute.name",
                 name: attribute.name.clone(),
+                mesh: Some(mesh_index),
             });
         }
     }

@@ -1,5 +1,19 @@
 use crate::file::{ComponentType, Domain, Semantic};
 
+/// Formats as `" (mesh {n})"` when `Some`, or nothing when `None` — used to optionally append
+/// mesh context to name-constraint error messages shared between top-level (object/mesh) and
+/// mesh-scoped (attribute) names.
+struct MeshSuffix(Option<usize>);
+
+impl std::fmt::Display for MeshSuffix {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            Some(mesh) => write!(f, " (mesh {mesh})"),
+            None => Ok(()),
+        }
+    }
+}
+
 /// Error occurred while loading a Topolyx file
 ///
 /// `#[non_exhaustive]`: new variants may be added in any `0.y` release without that being
@@ -48,14 +62,14 @@ pub enum TopolyxError {
     TrailingBytes(usize),
 
     // --- name constraints ---
-    #[error("empty {0} is not allowed")]
-    EmptyName(&'static str),
-    #[error("empty attribute.name is not allowed (mesh {mesh})")]
-    EmptyAttributeName { mesh: usize },
-    #[error("duplicate {kind}: {name:?}")]
-    DuplicateName { kind: &'static str, name: String },
-    #[error("duplicate attribute.name {name:?} within mesh {mesh}")]
-    DuplicateAttributeName { mesh: usize, name: String },
+    #[error("empty {kind} is not allowed{}", MeshSuffix(*mesh))]
+    EmptyName { kind: &'static str, mesh: Option<usize> },
+    #[error("duplicate {kind}: {name:?}{}", MeshSuffix(*mesh))]
+    DuplicateName {
+        kind: &'static str,
+        name: String,
+        mesh: Option<usize>,
+    },
 
     // --- index range ---
     #[error("object.index {index} out of range (meshes.len() == {length})")]
@@ -114,9 +128,10 @@ pub enum TopolyxError {
         found: u32,
     },
 
-    // --- coordinate system ---
-    #[error("coordinate_system.{field} is {found:?}, must be {expected:?}")]
-    InvalidCoordinateSystemField {
+    // --- fixed-value fields (header, coordinate system) ---
+    #[error("{scope}.{field} is {found:?}, must be {expected:?}")]
+    InvalidFixedField {
+        scope: &'static str,
         field: &'static str,
         expected: &'static str,
         found: String,

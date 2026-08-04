@@ -1,5 +1,5 @@
 /// Top-level structure of a Topolyx file
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, PartialEq)]
 pub struct TopolyxFile {
     pub header: Header,
     pub coordinate_system: CoordinateSystem,
@@ -8,14 +8,14 @@ pub struct TopolyxFile {
 }
 
 /// Header of a Topolyx file
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, PartialEq)]
 pub struct Header {
     pub format: String,  // "Topolyx"
     pub version: String, // "1.0"
 }
 
 /// Coordinate system information stored in the file. All fields except `meters_per_unit` are set to a single value.
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, PartialEq)]
 pub struct CoordinateSystem {
     pub up_axis: String,      // "+Z"
     pub forward_axis: String, // "+Y"
@@ -25,7 +25,7 @@ pub struct CoordinateSystem {
 }
 
 /// Object information referencing a single mesh.
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, PartialEq)]
 pub struct Object {
     pub name: String,
     #[serde(rename = "type")]
@@ -35,7 +35,7 @@ pub struct Object {
 }
 
 /// Topology and attribute data for a single mesh
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, PartialEq)]
 pub struct Mesh {
     pub name: String,
     pub element_counts: ElementCounts,
@@ -45,7 +45,7 @@ pub struct Mesh {
 }
 
 /// Number of vertices, edges, faces, and face corners in a mesh
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ElementCounts {
     pub vertices: u32,
     pub edges: u32,
@@ -54,7 +54,7 @@ pub struct ElementCounts {
 }
 
 /// Basic Topology Data for the Mesh
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, Copy, PartialEq)]
 pub struct Topology {
     pub positions: DataDescriptor,
     pub edges: DataDescriptor,
@@ -64,7 +64,7 @@ pub struct Topology {
 }
 
 /// Attribute Data Information in BIN
-#[derive(serde::Deserialize, Debug, Clone, Copy)]
+#[derive(serde::Deserialize, Debug, Clone, Copy, PartialEq)]
 pub struct DataDescriptor {
     pub byte_offset: u32,
     pub byte_length: u32,
@@ -96,7 +96,7 @@ impl ComponentType {
 }
 
 /// Attribute Information
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone, PartialEq)]
 pub struct Attribute {
     pub name: String,
     pub domain: Domain,

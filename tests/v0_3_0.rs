@@ -183,7 +183,7 @@ fn empty_object_name_is_rejected() {
 
     let err = read_and_validate(&json, &valid_cube_bin()).unwrap_err();
 
-    assert!(matches!(err, TopolyxError::EmptyName("object.name")));
+    assert!(matches!(err, TopolyxError::EmptyName { kind: "object.name", mesh: None }));
 }
 
 #[test]
@@ -192,7 +192,7 @@ fn empty_mesh_name_is_rejected() {
 
     let err = read_and_validate(&json, &valid_cube_bin()).unwrap_err();
 
-    assert!(matches!(err, TopolyxError::EmptyName("mesh.name")));
+    assert!(matches!(err, TopolyxError::EmptyName { kind: "mesh.name", mesh: None }));
 }
 
 #[test]
@@ -201,7 +201,10 @@ fn empty_attribute_name_is_rejected() {
 
     let err = read_and_validate(&json, &valid_cube_bin()).unwrap_err();
 
-    assert!(matches!(err, TopolyxError::EmptyAttributeName { mesh: 0 }));
+    assert!(matches!(
+        err,
+        TopolyxError::EmptyName { kind: "attribute.name", mesh: Some(0) }
+    ));
 }
 
 #[test]
@@ -244,7 +247,7 @@ fn duplicate_attribute_names_within_same_mesh_are_rejected() {
 
     assert!(matches!(
         err,
-        TopolyxError::DuplicateAttributeName { mesh: 0, .. }
+        TopolyxError::DuplicateName { kind: "attribute.name", mesh: Some(0), .. }
     ));
 }
 
@@ -374,6 +377,22 @@ fn attribute_element_count_mismatch_is_rejected() {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------------------------------
+
+#[test]
+fn wrong_header_format_is_rejected() {
+    let json = mutate_cube_json(|v| v["header"]["format"] = json!("NotTopolyx"));
+
+    let err = read_and_validate(&json, &valid_cube_bin()).unwrap_err();
+
+    assert!(matches!(
+        err,
+        TopolyxError::InvalidFixedField { scope: "header", field: "format", .. }
+    ));
+}
+
+// ---------------------------------------------------------------------------------------------
 // Coordinate system
 // ---------------------------------------------------------------------------------------------
 
@@ -385,7 +404,7 @@ fn wrong_up_axis_is_rejected() {
 
     assert!(matches!(
         err,
-        TopolyxError::InvalidCoordinateSystemField { field: "up_axis", .. }
+        TopolyxError::InvalidFixedField { scope: "coordinate_system", field: "up_axis", .. }
     ));
 }
 
@@ -397,7 +416,7 @@ fn wrong_winding_is_rejected() {
 
     assert!(matches!(
         err,
-        TopolyxError::InvalidCoordinateSystemField { field: "winding", .. }
+        TopolyxError::InvalidFixedField { scope: "coordinate_system", field: "winding", .. }
     ));
 }
 
