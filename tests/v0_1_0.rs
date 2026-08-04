@@ -8,7 +8,7 @@ fn read_topolyx_parses_default_cube_fixture() {
     // custom_attribute가 612..804 바이트를 차지하므로 BIN은 최소 804바이트 필요
     let data = build_container(DEFAULT_CUBE_JSON, &vec![0u8; 804]);
 
-    let result = read_topolyx_from_data(data);
+    let result = read_topolyx_from_data(&data);
 
     let (file, bin) = result.expect("valid fixture should parse without error");
 

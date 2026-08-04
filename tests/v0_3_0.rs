@@ -8,7 +8,7 @@ use common::{DEFAULT_CUBE_JSON, EMPTY_MESH_JSON, build_container, mutate_cube_js
 /// Parses+reads a container built from `json`/`bin`, then runs the full `validate()` pass.
 fn read_and_validate(json: &str, bin: &[u8]) -> Result<(), TopolyxError> {
     let data = build_container(json, bin);
-    let (file, bin) = read_topolyx_from_data(data).expect("container/JSON should parse");
+    let (file, bin) = read_topolyx_from_data(&data).expect("container/JSON should parse");
     file.validate(&bin)
 }
 
@@ -48,7 +48,7 @@ fn container_version_mismatching_json_header_major_is_rejected() {
     });
     let data = build_container(&json, &valid_cube_bin());
 
-    let err = read_topolyx_from_data(data).unwrap_err();
+    let err = read_topolyx_from_data(&data).unwrap_err();
 
     assert!(matches!(
         err,
@@ -63,7 +63,7 @@ fn json_header_version_with_invalid_format_is_rejected() {
     });
     let data = build_container(&json, &valid_cube_bin());
 
-    let err = read_topolyx_from_data(data).unwrap_err();
+    let err = read_topolyx_from_data(&data).unwrap_err();
 
     assert!(matches!(err, TopolyxError::InvalidHeaderVersion(_)));
 }
@@ -94,12 +94,26 @@ fn json_chunk_padding_byte_other_than_space_is_rejected() {
     data.extend_from_slice(b"BIN\0");
     data.extend_from_slice(&bin_bytes);
 
-    let err = read_topolyx_from_data(data).unwrap_err();
+    let err = read_topolyx_from_data(&data).unwrap_err();
 
     assert!(matches!(
         err,
         TopolyxError::InvalidPadding { chunk: "JSON", expected: b' ', found: b'\t' }
     ));
+}
+
+#[test]
+fn trailing_bytes_after_bin_chunk_are_rejected() {
+    // Append 4 extra bytes after the BIN chunk, and fix up `total_length` to match the new
+    // (bogus) file length so this doesn't just get rejected as a TotalLengthMismatch instead.
+    let mut data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
+    data.extend_from_slice(&[0u8; 4]);
+    let new_total_length = data.len() as u32;
+    data[8..12].copy_from_slice(&new_total_length.to_le_bytes());
+
+    let err = read_topolyx_from_data(&data).unwrap_err();
+
+    assert!(matches!(err, TopolyxError::TrailingBytes(4)));
 }
 
 // ---------------------------------------------------------------------------------------------

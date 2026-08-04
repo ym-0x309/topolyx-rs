@@ -44,11 +44,11 @@ use reader::{check_header_version, check_json_padding, parse_container};
 pub fn read_topolyx(path: impl AsRef<Path>) -> Result<(TopolyxFile, Vec<u8>), TopolyxError> {
     let data = std::fs::read(path)?;
 
-    read_topolyx_from_data(data)
+    read_topolyx_from_data(&data)
 }
 
 /// Returns a parsed structure and binary data based on the input data without reading the file.
-pub fn read_topolyx_from_data(data: Vec<u8>) -> Result<(TopolyxFile, Vec<u8>), TopolyxError> {
+pub fn read_topolyx_from_data(data: &Vec<u8>) -> Result<(TopolyxFile, Vec<u8>), TopolyxError> {
     let (container_version, json_bytes, bin_bytes) = parse_container(&data)?;
 
     // `into_iter` (rather than plain `from_slice`) is used so `byte_offset()` reports exactly

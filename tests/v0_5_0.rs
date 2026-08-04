@@ -48,7 +48,7 @@ fn mesh_with_face_offsets(face_offsets: &[u32]) -> (Mesh, Vec<u8>) {
 #[test]
 fn triangulate_fan_corner_indices_uses_corner_indices_not_vertex_indices() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let indices = mesh.triangulate_fan_corner_indices(&bin).unwrap();
@@ -63,7 +63,7 @@ fn triangulate_fan_corner_indices_uses_corner_indices_not_vertex_indices() {
 #[test]
 fn triangulate_fan_corner_and_vertex_indices_describe_the_same_geometry() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let vertex_indices = mesh.triangulate_fan_indices(&bin).unwrap();
@@ -82,7 +82,7 @@ fn triangulate_fan_corner_and_vertex_indices_describe_the_same_geometry() {
 #[test]
 fn triangulate_fan_corner_indices_safely_index_a_corner_domain_attribute() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let corner_indices = mesh.triangulate_fan_corner_indices(&bin).unwrap();
@@ -116,7 +116,7 @@ fn triangulate_fan_corner_indices_skips_degenerate_faces() {
 #[test]
 fn triangulate_fan_face_indices_maps_each_triangle_to_its_source_face() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let face_indices = mesh.triangulate_fan_face_indices(&bin).unwrap();
@@ -128,7 +128,7 @@ fn triangulate_fan_face_indices_maps_each_triangle_to_its_source_face() {
 #[test]
 fn triangulate_fan_face_indices_lines_up_with_the_corner_index_buffer() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let corner_indices = mesh.triangulate_fan_corner_indices(&bin).unwrap();

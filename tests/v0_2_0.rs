@@ -187,7 +187,7 @@ fn end_to_end_decodes_default_cube_fixture() {
     bin[8..12].copy_from_slice(&3.0f32.to_le_bytes());
 
     let data = build_container(DEFAULT_CUBE_JSON, &bin);
-    let (file, bin) = read_topolyx_from_data(data).expect("valid fixture should parse");
+    let (file, bin) = read_topolyx_from_data(&data).expect("valid fixture should parse");
 
     let mesh = &file.meshes[0];
 

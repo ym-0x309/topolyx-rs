@@ -5,7 +5,7 @@
 This is a Rust crate for reading the Topolyx (.tlyx) format. 
 
 ## Reference Documents
-- For information on the `topoolyx` crate’s API, see the [docs.rs page](https://docs.rs/topolyx/latest/topolyx/).
+- For information on the `topolyx` crate’s API, see the [docs.rs page](https://docs.rs/topolyx/latest/topolyx/).
 - For more detailed information on the Topolyx format, please refer to [the repository](https://github.com/ym-0x309/topolyx).
 - For version-specific change logs and future plans, please refer to [CHANGELOG.md](/CHANGELOG.md).
 

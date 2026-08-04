@@ -29,7 +29,8 @@
 - `Mesh::triangulate_fan_face_indices` 추가 (`src/faces.rs`) — `triangulate_fan_indices`/`triangulate_fan_corner_indices`가 만든 삼각형 하나당 원래 face 인덱스를 병렬 배열로 반환, FACE 도메인 attribute(재질 인덱스, `sharp_face` 등)를 삼각화된 출력에서도 조회할 수 있게 함. 블렌더의 `bpy.types.MeshLoopTriangle.polygon_index`와 동일한 패턴
 - EDGE 도메인 attribute는 삼각화된 출력에서 조회할 방법이 근본적으로 없다는 점을 rustdoc에 명시 — fan triangulation이 만드는 대각선은 `topology.edges`에 대응 항목이 없어 값 자체가 존재하지 않음(블렌더의 `MeshLoopTriangle`에도 동일한 이유로 엣지 프로브넌스가 없음)
 - `TopolyxError`에 `#[non_exhaustive]` 추가 — 이번 릴리스는 `CornerIndexOutOfRange`류 새 variant 자체가 이미 breaking이지만, 이후로는 새 에러 variant 추가가 breaking change가 되지 않도록 함
-- 실행 테스트 추가 (`tests/v0_5_0.rs`)
+- 컨테이너 검증 버그 수정: `parse_container`가 BIN 청크 뒤에 남는 바이트를 검사하지 않던 문제 (`src/reader.rs`) — `header.total_length`만 실제 파일 길이와 맞추면 BIN 청크 선언 길이 뒤에 임의의 바이트를 덧붙인 파일도 통과했음(스펙 5장 "파일은 정확히 이 두 청크만 포함"). `TopolyxError::TrailingBytes` 추가
+- 실행 테스트 추가 (`tests/v0_5_0.rs`, `tests/v0_3_0.rs`)
 
 ### v0.4.0
 

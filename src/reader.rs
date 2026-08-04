@@ -24,7 +24,14 @@ pub fn parse_container(data: &[u8]) -> Result<(u32, &[u8], &[u8]), TopolyxError>
     let (json_bytes, offset) = read_chunk(data, 12, b"JSON")?;
 
     // 청크 1 (BIN)
-    let (bin_bytes, _) = read_chunk(data, offset, b"BIN\0")?;
+    let (bin_bytes, bin_chunk_end) = read_chunk(data, offset, b"BIN\0")?;
+
+    // BIN 청크가 파일 끝까지 정확히 채워야 함 (스펙 5장 "파일은 정확히 이 두 청크만 포함") —
+    // 그렇지 않으면 total_length를 실제 파일 길이에 맞춰두기만 한 채 BIN 청크 뒤에 임의의
+    // 바이트를 덧붙인 파일도 조용히 통과해버린다.
+    if bin_chunk_end != data.len() {
+        return Err(TopolyxError::TrailingBytes(data.len() - bin_chunk_end));
+    }
 
     Ok((version, json_bytes, bin_bytes))
 }

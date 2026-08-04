@@ -22,7 +22,7 @@ fn identity_object() -> Object {
 #[test]
 fn triangulate_fan_indices_flattens_every_face_of_the_cube() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let indices = mesh.triangulate_fan_indices(&bin).unwrap();
@@ -55,7 +55,7 @@ fn triangulate_fan_does_not_panic_on_degenerate_faces() {
 #[test]
 fn corner_positions_reindexes_positions_by_corner_vertices() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let positions = mesh.topology.positions(&bin).unwrap();
@@ -73,7 +73,7 @@ fn corner_positions_out_of_range_index_is_reported_without_panicking() {
     let mut bin = valid_cube_bin();
     bin[192..196].copy_from_slice(&99u32.to_le_bytes()); // corner_vertices[0] = 99; only 8 vertices exist
     let data = build_container(DEFAULT_CUBE_JSON, &bin);
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     let err = mesh.corner_positions(&bin).unwrap_err();
@@ -87,7 +87,7 @@ fn corner_positions_out_of_range_index_is_reported_without_panicking() {
 #[test]
 fn world_corner_positions_combines_transform_and_reindexing() {
     let data = build_container(DEFAULT_CUBE_JSON, &valid_cube_bin());
-    let (file, bin) = read_topolyx_from_data(data).unwrap();
+    let (file, bin) = read_topolyx_from_data(&data).unwrap();
     let mesh = &file.meshes[0];
 
     // Same transform as the v0.4.0 world_positions tests: L = diag(2, 1, 1), t = (1, 2, 3).

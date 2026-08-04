@@ -11,7 +11,7 @@ use common::{DEFAULT_CUBE_JSON, build_container, mutate_cube_json, valid_cube_bi
 /// convenience API must not require `validate()` to have run first.
 fn parse(json: &str, bin: &[u8]) -> (TopolyxFile, Vec<u8>) {
     let data = build_container(json, bin);
-    read_topolyx_from_data(data).expect("container/JSON should parse")
+    read_topolyx_from_data(&data).expect("container/JSON should parse")
 }
 
 fn f32_bin(values: &[f32]) -> Vec<u8> {

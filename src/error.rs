@@ -17,7 +17,7 @@ pub enum TopolyxError {
     MalformedContainer,
     #[error("total_length mismatch")]
     TotalLengthMismatch,
-    #[error("json error:: {0}")]
+    #[error("json error: {0}")]
     Json(#[from] serde_json::Error),
     #[error("byte_offset is not 4-byte aligned: {0}")]
     UnalignedByteOffset(u32),
@@ -44,6 +44,8 @@ pub enum TopolyxError {
         expected: u8,
         found: u8,
     },
+    #[error("{0} trailing byte(s) after the BIN chunk (the file must contain exactly the JSON and BIN chunks)")]
+    TrailingBytes(usize),
 
     // --- name constraints ---
     #[error("empty {0} is not allowed")]
