@@ -14,10 +14,13 @@
 //!
 //! - [`grouped`]: semantic-aware grouping ([`file::Topology::positions`],
 //!   [`file::Attribute::values`], ...).
-//! - [`faces`]: per-face corner traversal ([`file::Mesh::faces`]), naive fan triangulation
-//!   ([`file::Mesh::triangulate_fan_indices`]), and reindexing `POINT`-domain data to per-corner
-//!   ([`file::Mesh::corner_positions`], [`file::Mesh::world_corner_positions`]) for GPU vertex
-//!   buffers.
+//! - [`faces`]: per-face corner traversal ([`file::Mesh::faces`]), naive fan triangulation as
+//!   vertex indices ([`file::Mesh::triangulate_fan_indices`]), corner indices
+//!   ([`file::Mesh::triangulate_fan_corner_indices`]), or originating face indices
+//!   ([`file::Mesh::triangulate_fan_face_indices`]), and reindexing `POINT`-domain data to
+//!   per-corner ([`file::Mesh::corner_positions`], [`file::Mesh::world_corner_positions`]) —
+//!   see the module docs for which index buffer pairs with which vertex-buffer layout and
+//!   domain (`EDGE`-domain attributes cannot be resolved post-triangulation at all).
 //! - [`transform`]: world-space conversion ([`file::Mesh::world_positions`],
 //!   [`file::Attribute::world_values`]) per spec section 4, "Object Transform Application
 //!   Rules". `ROTATION` is not supported yet — see the module docs.

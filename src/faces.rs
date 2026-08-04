@@ -76,15 +76,81 @@ impl Mesh {
 
     /// A flat triangle-index buffer for the whole mesh (3 indices per triangle), naive
     /// fan-triangulating every face — see [`Face::triangulate_fan`] for the non-planar/concave
-    /// caveat. Ready to hand to a GPU as an index buffer.
+    /// caveat. **Indices are vertex indices** (`0..vertices`, i.e. `corner_vertices` values), so
+    /// this is only safe to use against `POINT`-domain data (`topology.positions()` or a
+    /// `POINT`-domain attribute). It does **not** index correctly into any `CORNER`-domain
+    /// attribute (e.g. `NORMAL`, UVs) or into [`Mesh::corner_positions`] — those are stored per
+    /// corner (`0..corners`), and a single vertex can carry different corner values on
+    /// different faces (that's the reason `CORNER` domain exists, e.g. UV seams / hard-shaded
+    /// normals). Use [`Mesh::triangulate_fan_corner_indices`] instead when the vertex buffer
+    /// includes any `CORNER`-domain attribute, or [`Mesh::triangulate_fan_face_indices`] to look
+    /// up a `FACE`-domain attribute per output triangle.
+    ///
+    /// `EDGE`-domain attributes cannot be resolved for any triangulated output at all: fan
+    /// triangulation of an n-gon (n > 3) introduces new diagonal edges that don't exist in
+    /// `topology.edges`, so there is no original edge index — and thus no `EDGE`-domain
+    /// attribute value — for a diagonal to look up. (This mirrors Blender's own triangulation:
+    /// `bpy.types.MeshLoopTriangle` exposes `.polygon_index` for the originating face, but no
+    /// equivalent per-edge provenance.)
     pub fn triangulate_fan_indices(&self, bin: &[u8]) -> Result<Vec<u32>, TopolyxError> {
         Ok(self.faces(bin)?.iter().flat_map(|f| f.triangulate_fan()).flatten().collect())
+    }
+
+    /// A flat triangle-index buffer for the whole mesh (3 indices per triangle), naive
+    /// fan-triangulating every face like [`Mesh::triangulate_fan_indices`] — same non-planar/
+    /// concave and `EDGE`-domain caveats apply, see its docs — but **indices are corner indices**
+    /// (`0..corners`) rather than vertex indices. Use this to index [`Mesh::corner_positions`]/
+    /// [`Mesh::world_corner_positions`] and any `CORNER`-domain attribute from
+    /// [`crate::grouped::AttributeValues`]/[`crate::file::Attribute::values`] (which are
+    /// aligned by corner, not by vertex) when building a single interleaved per-corner GPU
+    /// vertex buffer. Pair with [`Mesh::triangulate_fan_face_indices`] for `FACE`-domain lookups.
+    ///
+    /// Faces with fewer than 3 corners contribute no triangles (see [`Face::triangulate_fan`]).
+    pub fn triangulate_fan_corner_indices(&self, bin: &[u8]) -> Result<Vec<u32>, TopolyxError> {
+        let face_offsets = self.topology.face_offsets(bin)?;
+        let mut out = Vec::new();
+        for w in face_offsets.windows(2) {
+            let (start, end) = (w[0], w[1]);
+            if end.saturating_sub(start) < 3 {
+                continue;
+            }
+            for corner in (start + 1)..(end - 1) {
+                out.extend_from_slice(&[start, corner, corner + 1]);
+            }
+        }
+        Ok(out)
+    }
+
+    /// The originating face index for each triangle produced by [`Mesh::triangulate_fan_indices`]
+    /// / [`Mesh::triangulate_fan_corner_indices`] (one entry per triangle, not per index) —
+    /// `face_indices[i]` corresponds to indices `3*i..3*i + 3` in either of those buffers. Use
+    /// this to resolve a `FACE`-domain attribute (e.g. a material index, or `sharp_face` as in
+    /// SPECIFICATION.md's example) per output triangle.
+    ///
+    /// Mirrors `polygon_index` on Blender's `bpy.types.MeshLoopTriangle`, which plays the same
+    /// role for its own render-time triangulation.
+    ///
+    /// Faces with fewer than 3 corners contribute no triangles, matching
+    /// [`Mesh::triangulate_fan_corner_indices`].
+    pub fn triangulate_fan_face_indices(&self, bin: &[u8]) -> Result<Vec<u32>, TopolyxError> {
+        let face_offsets = self.topology.face_offsets(bin)?;
+        let mut out = Vec::new();
+        for (face_index, w) in face_offsets.windows(2).enumerate() {
+            let corner_count = w[1].saturating_sub(w[0]);
+            if corner_count < 3 {
+                continue;
+            }
+            let triangle_count = (corner_count - 2) as usize;
+            out.extend(std::iter::repeat_n(face_index as u32, triangle_count));
+        }
+        Ok(out)
     }
 
     /// `topology.positions()` reindexed via `topology.corner_vertices()`: one position per face
     /// corner (length `corners`) instead of one per vertex (length `vertices`), so it lines up
     /// with any CORNER-domain attribute (e.g. `NORMAL`, UVs). Useful for interleaving positions
-    /// with corner-domain attributes into a single per-corner GPU vertex buffer.
+    /// with corner-domain attributes into a single per-corner GPU vertex buffer — pair with
+    /// [`Mesh::triangulate_fan_corner_indices`] for the matching index buffer.
     pub fn corner_positions(&self, bin: &[u8]) -> Result<Vec<[f32; 3]>, TopolyxError> {
         let positions = self.topology.positions(bin)?;
         let corner_vertices = self.topology.corner_vertices(bin)?;

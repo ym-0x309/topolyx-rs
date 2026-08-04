@@ -2,11 +2,11 @@
 
 ## 향후 계획
 
-### v0.5.0
+### v0.6.0
 
 - 적대적 입력 테스트
 
-### v0.6.0
+### v0.7.0
 
 - 문서화
 - api 동결
@@ -22,6 +22,14 @@
 ---
 
 ## 변경 기록
+
+### v0.5.0
+
+- `Mesh::triangulate_fan_corner_indices` 추가 (`src/faces.rs`) — `triangulate_fan_indices`(정점 인덱스, `0..vertices`)와 달리 코너 인덱스(`0..corners`) 기준으로 fan triangulate. `corner_positions`/`world_corner_positions`나 CORNER 도메인 attribute(노멀/UV 등)와 짝지어 인터리브 정점 버퍼를 그릴 때 사용 — `triangulate_fan_indices`의 정점 인덱스는 CORNER 도메인 데이터에는 대응이 안 됨(같은 정점이 face마다 다른 코너 값을 가질 수 있으므로)
+- `Mesh::triangulate_fan_face_indices` 추가 (`src/faces.rs`) — `triangulate_fan_indices`/`triangulate_fan_corner_indices`가 만든 삼각형 하나당 원래 face 인덱스를 병렬 배열로 반환, FACE 도메인 attribute(재질 인덱스, `sharp_face` 등)를 삼각화된 출력에서도 조회할 수 있게 함. 블렌더의 `bpy.types.MeshLoopTriangle.polygon_index`와 동일한 패턴
+- EDGE 도메인 attribute는 삼각화된 출력에서 조회할 방법이 근본적으로 없다는 점을 rustdoc에 명시 — fan triangulation이 만드는 대각선은 `topology.edges`에 대응 항목이 없어 값 자체가 존재하지 않음(블렌더의 `MeshLoopTriangle`에도 동일한 이유로 엣지 프로브넌스가 없음)
+- `TopolyxError`에 `#[non_exhaustive]` 추가 — 이번 릴리스는 `CornerIndexOutOfRange`류 새 variant 자체가 이미 breaking이지만, 이후로는 새 에러 variant 추가가 breaking change가 되지 않도록 함
+- 실행 테스트 추가 (`tests/v0_5_0.rs`)
 
 ### v0.4.0
 

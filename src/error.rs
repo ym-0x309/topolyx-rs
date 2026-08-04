@@ -1,7 +1,11 @@
 use crate::file::{ComponentType, Domain, Semantic};
 
 /// Error occurred while loading a Topolyx file
+///
+/// `#[non_exhaustive]`: new variants may be added in any `0.y` release without that being
+/// treated as a breaking change. Downstream `match`es must include a wildcard arm.
 #[derive(thiserror::Error, Debug)]
+#[non_exhaustive]
 pub enum TopolyxError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
